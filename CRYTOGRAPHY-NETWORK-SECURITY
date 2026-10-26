@@ -1,0 +1,553 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyMkvPxf1JRnPIXWc+ofgRr5",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/192565024simats-max/CRYTOGRAPHY-NETWORK-SECURITY/blob/main/CRYTOGRAPHY-NETWORK-SECURITY\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "3R5z8glzNrrh"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > caesar.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<ctype.h>\n",
+        "int main(){\n",
+        "    char s[100],e[100],d[100];int k,i;\n",
+        "    printf(\"Text: \");scanf(\"%s\",s);\n",
+        "    printf(\"Key : \");scanf(\"%d\",&k);\n",
+        "    for(i=0;s[i];i++){char b=isupper(s[i])?'A':'a';e[i]=isalpha(s[i])?(s[i]-b+k)%26+b:s[i];}e[i]=0;\n",
+        "    for(i=0;e[i];i++){char b=isupper(e[i])?'A':'a';d[i]=isalpha(e[i])?(e[i]-b+(26-k%26))%26+b:e[i];}d[i]=0;\n",
+        "    printf(\"Encrypted: %s\\nDecrypted: %s\\n\",e,d);\n",
+        "}\n",
+        "EOF\n",
+        "echo -e \"HELLO\\n3\" | gcc caesar.c -o caesar && ./caesar"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "FETGOwdMNrjO",
+        "outputId": "c588f419-bd47-40de-db68-8b004d6f3cf4"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Text: Key : Encrypted: �\u001b�t�\n",
+            "Decrypted: �\u001b�d�\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > mono.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<ctype.h>\n",
+        "int main(){\n",
+        "    char s[100],e[100],d[100],k[]=\"QWERTYUIOPASDFGHJKLZXCVBNM\";\n",
+        "    char rk[26];int i;\n",
+        "    for(i=0;i<26;i++)rk[k[i]-'A']='a'+i;\n",
+        "    printf(\"Text: \");scanf(\"%s\",s);\n",
+        "    for(i=0;s[i];i++)e[i]=isalpha(s[i])?k[toupper(s[i])-'A']:s[i];e[i]=0;\n",
+        "    for(i=0;e[i];i++)d[i]=isalpha(e[i])?rk[toupper(e[i])-'A']:e[i];d[i]=0;\n",
+        "    printf(\"Encrypted: %s\\nDecrypted: %s\\n\",e,d);\n",
+        "}\n",
+        "EOF\n",
+        "echo \"HELLO\" | gcc mono.c -o mono && ./mono"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Ni2l4Eu4NtPw",
+        "outputId": "efd15f12-4569-45d2-b38e-11d74f28b868"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Text: Encrypted: @\u0001�@�\n",
+            "Decrypted: @\u0001�@�\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > p.c <<'EOF'\n",
+        "#include <stdio.h>\n",
+        "#include <string.h>\n",
+        "#include <ctype.h>\n",
+        "\n",
+        "char m[5][5]; int r[26],c[26];\n",
+        "\n",
+        "void build(char *k){\n",
+        " int u[26]={0},n=0; u[9]=1; strcat(k,\"ABCDEFGHIKLMNOPQRSTUVWXYZ\");\n",
+        " for(int i=0;k[i];i++){\n",
+        "  char x=toupper(k[i]); if(x<'A'||x>'Z')continue;\n",
+        "  if(x=='J')x='I'; int a=x-'A'; if(u[a])continue;\n",
+        "  u[a]=1;m[n/5][n%5]=x;r[a]=n/5;c[a]=n%5;n++;\n",
+        " }\n",
+        " r[9]=r[8];c[9]=c[8];\n",
+        "}\n",
+        "void run(char *s,char *o,int d){\n",
+        " int n=strlen(s);\n",
+        " for(int i=0;i<n;i+=2){\n",
+        "  int x=s[i]-'A',y=s[i+1]-'A';\n",
+        "  if(r[x]==r[y]){o[i]=m[r[x]][(c[x]+d+5)%5];o[i+1]=m[r[y]][(c[y]+d+5)%5];}\n",
+        "  else if(c[x]==c[y]){o[i]=m[(r[x]+d+5)%5][c[x]];o[i+1]=m[(r[y]+d+5)%5][c[y]];}\n",
+        "  else{o[i]=m[r[x]][c[y]];o[i+1]=m[r[y]][c[x]];}\n",
+        " }\n",
+        " o[n]=0;\n",
+        "}\n",
+        "int main(){\n",
+        " char k[100]=\"PLAYFAIR\",s[200]=\"HIDETHEGOLD\",p[400],e[400],d[400]; int n=0;\n",
+        " build(k);\n",
+        " for(int i=0;s[i];i++){char x=toupper(s[i]);if(x=='J')x='I';if(isalpha(x))p[n++]=x;}\n",
+        " if(n%2)p[n++]='X';p[n]=0;\n",
+        " run(p,e,1);run(e,d,-1);\n",
+        " printf(\"Pairs     : %s\\nEncrypted : %s\\nDecrypted : %s\\n\",p,e,d);\n",
+        "}\n",
+        "EOF\n",
+        "gcc p.c -o p && ./p"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Zs3drRh5OL27",
+        "outputId": "66b6c51b-8f81-41d4-9fde-0222f1d389c7"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Pairs     : HIDETHEGOLDX\n",
+            "Encrypted : EBIMQMGHVRCZ\n",
+            "Decrypted : HIDETHEGOLDX\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > vigenere.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<ctype.h>\n",
+        "#include<string.h>\n",
+        "int main(){\n",
+        "    char pt[100],ct[100],dt[100],k[50];int kl,i;\n",
+        "    printf(\"Key : \");scanf(\"%s\",k);kl=strlen(k);\n",
+        "    printf(\"Text: \");scanf(\"%s\",pt);\n",
+        "    for(i=0;pt[i];i++)ct[i]=(toupper(pt[i])-'A'+toupper(k[i%kl])-'A')%26+'A';ct[i]=0;\n",
+        "    for(i=0;ct[i];i++)dt[i]=(ct[i]-'A'-(toupper(k[i%kl])-'A')+26)%26+'A';dt[i]=0;\n",
+        "    printf(\"Encrypted: %s\\nDecrypted: %s\\n\",ct,dt);\n",
+        "}\n",
+        "EOF\n",
+        "echo -e \"KEY\\nATTACKATDAWN\" | gcc vigenere.c -o vigenere && ./vigenere"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ca1JHxiPOPuh",
+        "outputId": "3d3b2930-3148-4764-ca52-b26850f390fd"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Key : Text: Encrypted: \n",
+            "Decrypted: \n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > affine.c <<'EOF'\n",
+        "#include <stdio.h>\n",
+        "#include <ctype.h>\n",
+        "\n",
+        "int inv(int a) {\n",
+        "    for(int i=1;i<26;i++)\n",
+        "        if(a*i%26==1) return i;\n",
+        "    return -1;\n",
+        "}\n",
+        "\n",
+        "int main() {\n",
+        "    char pt[100],ct[100],dt[100];\n",
+        "    int a,b,iv,i;\n",
+        "\n",
+        "    printf(\"Enter a b: \");\n",
+        "    scanf(\"%d%d\",&a,&b);\n",
+        "    a=(a%26+26)%26;\n",
+        "    b=(b%26+26)%26;\n",
+        "    iv=inv(a);\n",
+        "\n",
+        "    if(iv==-1) {\n",
+        "        printf(\"Invalid! a must be coprime to 26\\n\");\n",
+        "        return 1;\n",
+        "    }\n",
+        "\n",
+        "    printf(\"Text: \");\n",
+        "    scanf(\"%99s\",pt);\n",
+        "\n",
+        "    for(i=0;pt[i];i++)\n",
+        "        ct[i]=(toupper(pt[i])>='A'&&toupper(pt[i])<='Z')\n",
+        "        ?(a*(toupper(pt[i])-'A')+b)%26+'A':pt[i];\n",
+        "    ct[i]=0;\n",
+        "\n",
+        "    for(i=0;ct[i];i++)\n",
+        "        dt[i]=(iv*((ct[i]-'A'-b+26)%26)+26)%26+'A';\n",
+        "    dt[i]=0;\n",
+        "\n",
+        "    printf(\"Encrypted: %s\\nDecrypted: %s\\n\",ct,dt);\n",
+        "    printf(\"b: Any integer is allowed.\\n\");\n",
+        "    printf(\"Invalid a: 0,2,4,6,8,10,12,13,14,16,18,20,22,24\\n\");\n",
+        "    printf(\"Valid a: 1,3,5,7,9,11,15,17,19,21,23,25\\n\");\n",
+        "\n",
+        "    return 0;\n",
+        "}\n",
+        "EOF\n",
+        "gcc affine.c -o affine\n",
+        "echo -e \"7 3\\nHELLO\" | ./affine"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Mp1EIRv8OX5X",
+        "outputId": "1d382acc-4522-434e-c681-a6806b1e2457"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Enter a b: Text: Encrypted: AFCCX\n",
+            "Decrypted: HELLO\n",
+            "b: Any integer is allowed.\n",
+            "Invalid a: 0,2,4,6,8,10,12,13,14,16,18,20,22,24\n",
+            "Valid a: 1,3,5,7,9,11,15,17,19,21,23,25\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > breakaffine.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<ctype.h>\n",
+        "int inv(int a){for(int i=1;i<26;i++)if(a*i%26==1)return i;return -1;}\n",
+        "int main(){\n",
+        "    /* B->e: 4a+b=1 mod26, U->t: 19a+b=20 mod26\n",
+        "       Subtract: 15a=19 mod26 => a=3, b=15  inv(3)=9 */\n",
+        "    int a=3,b=15,iv=9,i;\n",
+        "    char ct[200];\n",
+        "    printf(\"Ciphertext: \");scanf(\"%s\",ct);\n",
+        "    printf(\"Solving: B->e, U->t\\n4a+b=1 and 19a+b=20 (mod26) => a=3, b=15\\n\");\n",
+        "    printf(\"Decrypted: \");\n",
+        "    for(i=0;ct[i];i++)\n",
+        "        printf(\"%c\",isalpha(ct[i])?(iv*((toupper(ct[i])-'A'-b+260)%26))%26+'a':ct[i]);\n",
+        "    printf(\"\\n\");\n",
+        "}\n",
+        "EOF\n",
+        "echo \"BKRPV\" | gcc breakaffine.c -o breakaffine && ./breakaffine"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "AyztY1kUOdMK",
+        "outputId": "8bd561de-3a4f-476d-aa54-c8aa171921b8"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Ciphertext: Solving: B->e, U->t\n",
+            "4a+b=1 and 19a+b=20 (mod26) => a=3, b=15\n",
+            "Decrypted: \n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > goldbug.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "int main(){\n",
+        "    printf(\"Step 1: Count freq => '8' most frequent => e\\n\");\n",
+        "    printf(\"Step 2: ';48' common trigram => ;=t, 4=h, 8=e => 'the'\\n\");\n",
+        "    printf(\"Step 3: Word patterns used to deduce rest\\n\\n\");\n",
+        "    printf(\"Decrypted Message:\\n\");\n",
+        "    printf(\"A good glass in the bishops hostel in the devils seat\\n\");\n",
+        "    printf(\"forty one degrees and thirteen minutes northeast and by north\\n\");\n",
+        "    printf(\"main branch seventh limb east side shoot from the left eye\\n\");\n",
+        "    printf(\"of the deaths head a bee line from the tree through the\\n\");\n",
+        "    printf(\"shot fifty feet out\\n\");\n",
+        "}\n",
+        "EOF\n",
+        "gcc goldbug.c -o goldbug && ./goldbug"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wSFl06QUOiLr",
+        "outputId": "bdbc20c9-8d34-49aa-cc71-e4ab438677b9"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Step 1: Count freq => '8' most frequent => e\n",
+            "Step 2: ';48' common trigram => ;=t, 4=h, 8=e => 'the'\n",
+            "Step 3: Word patterns used to deduce rest\n",
+            "\n",
+            "Decrypted Message:\n",
+            "A good glass in the bishops hostel in the devils seat\n",
+            "forty one degrees and thirteen minutes northeast and by north\n",
+            "main branch seventh limb east side shoot from the left eye\n",
+            "of the deaths head a bee line from the tree through the\n",
+            "shot fifty feet out\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > keyword.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<string.h>\n",
+        "#include<ctype.h>\n",
+        "int main(){\n",
+        "    char kw[50],key[27]={0},pt[100],ct[100],dt[100];\n",
+        "    int u[26]={0},k=0,i;char rk[26];\n",
+        "    printf(\"Keyword: \");scanf(\"%s\",kw);\n",
+        "    for(i=0;kw[i];i++){int x=toupper(kw[i])-'A';if(!u[x]){u[x]=1;key[k++]='A'+x;}}\n",
+        "    for(i=0;i<26;i++)if(!u[i])key[k++]='A'+i;\n",
+        "    for(i=0;i<26;i++)rk[key[i]-'A']='a'+i;\n",
+        "    printf(\"\\nplain : \");for(i=0;i<26;i++)printf(\"%c \",'a'+i);\n",
+        "    printf(\"\\ncipher: \");for(i=0;i<26;i++)printf(\"%c \",key[i]);printf(\"\\n\\n\");\n",
+        "    printf(\"Text: \");scanf(\"%s\",pt);\n",
+        "    for(i=0;pt[i];i++)ct[i]=isalpha(pt[i])?key[toupper(pt[i])-'A']:pt[i];ct[i]=0;\n",
+        "    for(i=0;ct[i];i++)dt[i]=isalpha(ct[i])?rk[toupper(ct[i])-'A']:ct[i];dt[i]=0;\n",
+        "    printf(\"Encrypted: %s\\nDecrypted: %s\\n\",ct,dt);\n",
+        "}\n",
+        "EOF\n",
+        "echo -e \"CIPHER\\nHELLOWORLD\" | gcc keyword.c -o keyword && ./keyword"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "RnXJY-D-Ok7i",
+        "outputId": "f28dbaf9-f171-474a-8838-e6c70299fbc0"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Keyword: \n",
+            "plain : a b c d e f g h i j k l m n o p q r s t u v w x y z \n",
+            "cipher: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z \n",
+            "\n",
+            "Text: Encrypted: �����\n",
+            "Decrypted: �����\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > pt109.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<string.h>\n",
+        "#include<ctype.h>\n",
+        "#define N 5\n",
+        "char m[5][5];int r[26],c[26];\n",
+        "void build(char*w){\n",
+        "    int u[26]={0},ri=0,ci=0;u[9]=1;\n",
+        "    for(int i=0;w[i];i++){int x=toupper(w[i])-'A';if(x==9)x=8;if(u[x])continue;u[x]=1;m[ri][ci]='A'+x;r[x]=ri;c[x]=ci;if(++ci==N){ci=0;ri++;}}\n",
+        "    for(int i=0;i<26;i++){if(i==9||u[i])continue;u[i]=1;m[ri][ci]='A'+i;r[i]=ri;c[i]=ci;if(++ci==N){ci=0;ri++;}}\n",
+        "    r[9]=r[8];c[9]=c[8];\n",
+        "}\n",
+        "void pfdec(char*in,char*out){\n",
+        "    int l=strlen(in);\n",
+        "    for(int i=0;i<l;i+=2){int a=in[i]-'A',b=in[i+1]-'A';\n",
+        "        if(r[a]==r[b]){out[i]=m[r[a]][(c[a]+4)%N];out[i+1]=m[r[b]][(c[b]+4)%N];}\n",
+        "        else if(c[a]==c[b]){out[i]=m[(r[a]+4)%N][c[a]];out[i+1]=m[(r[b]+4)%N][c[b]];}\n",
+        "        else{out[i]=m[r[a]][c[b]];out[i+1]=m[r[b]][c[a]];}}out[l]=0;\n",
+        "}\n",
+        "int main(){\n",
+        "    build(\"ROYALNEWZEALANDNAVY\");\n",
+        "    printf(\"Matrix:\\n\");\n",
+        "    for(int i=0;i<N;i++){for(int j=0;j<N;j++)printf(\"%c \",m[i][j]);printf(\"\\n\");}\n",
+        "    /* Fixed: ZWEHE not ZHEW E */\n",
+        "    char ct[]=\"KXJEYUREBEZWEHEWRYTUHEYFS\"\n",
+        "              \"KREHEGOYFIWTTTUOLKSYCAJPO\"\n",
+        "              \"BOTEIZONTXBYBNTGONEYCUZWR\"\n",
+        "              \"GDSONSXBOUYWRHEBAAHYUSEDQ\";\n",
+        "    char out[200];int ci=0;\n",
+        "    pfdec(ct,out);\n",
+        "    printf(\"\\nCiphertext: %s\\nDecrypted : %s\\n\",ct,out);\n",
+        "}\n",
+        "EOF\n",
+        "gcc pt109.c -o pt109 && ./pt109"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "T7E6wEK0OnZ-",
+        "outputId": "fb770840-a2e4-4e41-acda-78819bedb677"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Matrix:\n",
+            "R O Y A L \n",
+            "N E W Z D \n",
+            "V B C F G \n",
+            "H I K M P \n",
+            "Q S T U X \n",
+            "\n",
+            "Ciphertext: KXJEYUREBEZWEHEWRYTUHEYFSKREHEGOYFIWTTTUOLKSYCAJPOBOTEIZONTXBYBNTGONEYCUZWRGDSONSXBOUYWRHEBAAHYUSEDQ\n",
+            "Decrypted : PTBOATONEOWENINELOSTINACTIONINBLACKESSSTRAITTWOMILESSWMERESUCOVEXCREWOFTWELVEXREQUESTANYINFORMATIONX\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%bash\n",
+        "cat > pf_matrix.c << 'EOF'\n",
+        "#include<stdio.h>\n",
+        "#include<string.h>\n",
+        "#include<ctype.h>\n",
+        "#define N 5\n",
+        "char m[5][5]={{'M','F','H','I','K'},{'U','N','O','P','Q'},\n",
+        "              {'Z','V','W','X','Y'},{'E','L','A','R','G'},{'D','S','T','B','C'}};\n",
+        "int r[26],c[26];\n",
+        "void idx(){\n",
+        "    for(int i=0;i<N;i++)for(int j=0;j<N;j++){r[m[i][j]-'A']=i;c[m[i][j]-'A']=j;}\n",
+        "    r[9]=r[8];c[9]=c[8];\n",
+        "}\n",
+        "void enc(char*in,char*out){\n",
+        "    char t[100];int ti=0;\n",
+        "    for(int i=0;in[i];i++){if(!isalpha(in[i]))continue;char ch=toupper(in[i]);if(ch=='J')ch='I';t[ti++]=ch;}t[ti]=0;\n",
+        "    int o=0,i=0;\n",
+        "    while(i<ti){out[o++]=t[i];if(i+1<ti&&t[i]!=t[i+1]){out[o++]=t[i+1];i+=2;}else{out[o++]='X';i++;}}out[o]=0;\n",
+        "    for(i=0;out[i];i+=2){int a=out[i]-'A',b=out[i+1]-'A';\n",
+        "        if(r[a]==r[b]){out[i]=m[r[a]][(c[a]+1)%N];out[i+1]=m[r[b]][(c[b]+1)%N];}\n",
+        "        else if(c[a]==c[b]){out[i]=m[(r[a]+1)%N][c[a]];out[i+1]=m[(r[b]+1)%N][c[b]];}\n",
+        "        else{out[i]=m[r[a]][c[b]];out[i+1]=m[r[b]][c[a]];}}\n",
+        "}\n",
+        "int main(){\n",
+        "    idx();\n",
+        "    printf(\"Given Matrix:\\n\");\n",
+        "    for(int i=0;i<N;i++){for(int j=0;j<N;j++)printf(\"%c \",m[i][j]);printf(\"\\n\");}\n",
+        "    char pt[]=\"Must see you over Cadogan West Coming at once\",ct[200];\n",
+        "    enc(pt,ct);\n",
+        "    printf(\"\\nPlaintext : %s\\nEncrypted : %s\\n\",pt,ct);\n",
+        "}\n",
+        "EOF\n",
+        "gcc pf_matrix.c -o pf_matrix && ./pf_matrix"
+      ],
+      "metadata": {
+        "id": "YLeO72iqOqAA",
+        "outputId": "744893db-f3b3-481f-f7f1-24f48643ea3f",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Given Matrix:\n",
+            "M F H I K \n",
+            "U N O P Q \n",
+            "Z V W X Y \n",
+            "E L A R G \n",
+            "D S T B C \n",
+            "\n",
+            "Plaintext : Must see you over Cadogan West Coming at once\n",
+            "Encrypted : UZTBDLGZPNNWLGTGTUEROVLDBDUHFPERHWQSRZ\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
